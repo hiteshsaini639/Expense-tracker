@@ -30,52 +30,44 @@ userList.addEventListener('click',editData);
 // submit
 btn.addEventListener('click',submit);
 
+//show msg function
+function showMsg(message,type){
+    msg.textContent=message;
+        msg.classList.add(type);
+        setTimeout(()=>{msg.classList.remove(type);
+        msg.textContent=''},2000);
+}
+
+// show output on frontend
+function showData(obj){
+    const createTextNode=`<li class="listItem">${obj.amount}-${obj.category}-${obj.description}<button class="btn1 del">Delete</button><button class="btn1 edit">Edit</button></li>`;
+    userList.innerHTML+=createTextNode;
+}
+
 function submit(event){
     event.preventDefault();
 
     // showing error messege if input is empty
     if(amountInput.value==='' || descriptionInput.value==='' || categoryInput.value==''){
-        msg.classList.add("error");
-        msg.textContent="Please enter all field ❌";
-        setTimeout(function(){
-        msg.classList.remove("error");
-        msg.textContent='';},2000);
+        showMsg("Please enter all field ❌","error");
     }
     else{
         // showing success messege on submitting
-        msg.textContent="Expenses added ✅";
-        msg.classList.add('success');
-        setTimeout(()=>{msg.classList.remove('success');
-        msg.textContent='';},2000);
+        showMsg("Expenses added ✅","success");
 
         // creating object from user detail 
-        let obj=JSON.stringify({
+        let obj={
             amount:amountInput.value,
             category:categoryInput.value,
             description:descriptionInput.value
-        });
+        };
 
         // Adding data to localStorage
-        localStorage.setItem(`${amountInput.value}-${categoryInput.value}-${descriptionInput.value}`,obj);
+        localStorage.setItem(`${obj.amount}-${obj.category}-${obj.description}`,JSON.stringify(obj));
 
         // Adding data to frontend
-        let li=document.createElement('li');
-
-        let btndel =document.createElement('button');
-        let btnedit =document.createElement('button');
-
-        btndel.className='btn1 del';
-        btnedit.className='btn1 edit';
-        li.className='listItem';
-
-        btndel.appendChild(document.createTextNode('Delete'));
-        btnedit.appendChild(document.createTextNode('Edit'));
-
-        li.appendChild(document.createTextNode(`${amountInput.value}-${categoryInput.value}-${descriptionInput.value}`));
-        li.appendChild(btndel);
-        li.appendChild(btnedit);
-        userList.appendChild(li);
-
+        showData(obj);
+        
         // clearing data
         amountInput.value='';
         descriptionInput.value='';
@@ -89,23 +81,8 @@ function loadLocalData(){
         for(let i=0;i<localStorage.length;i++){
             let jsonData=localStorage.getItem(localStorage.key(i));
             let data=JSON.parse(jsonData);
-            let li=document.createElement('li');
-
-            let btndel =document.createElement('button');
-            let btnedit =document.createElement('button');
-
-            btndel.className='btn1 del';
-            btnedit.className='btn1 edit';
-            li.className='listItem';
-
-            btndel.appendChild(document.createTextNode('Delete'));
-            btnedit.appendChild(document.createTextNode('Edit'));
-
-            li.appendChild(document.createTextNode(`${data.amount}-${data.category}-${data.description}`));
-            li.appendChild(btndel);
-            li.appendChild(btnedit);
-            userList.appendChild(li);
             
+            showData(data);
         }
     }
 
@@ -113,9 +90,7 @@ function loadLocalData(){
 function detetedata(e){
     if(e.target.classList.contains('del')){
         if(confirm('Are You Sure?')){
-            let textKey=e.target.parentElement.firstChild.textContent;
-            localStorage.removeItem(textKey);
-            userList.removeChild(e.target.parentElement);
+            deleteFromScreenAndLocalStorage(e);
         }
     }
 }
@@ -128,7 +103,12 @@ function editData(e){
         amountInput.value=obj.amount;
         descriptionInput.value=obj.description;
         categoryInput.value=obj.category;
+        deleteFromScreenAndLocalStorage(e);
+    }
+}
+
+function deleteFromScreenAndLocalStorage(e){
+    let textKey=e.target.parentElement.firstChild.textContent;
         localStorage.removeItem(textKey);
         userList.removeChild(e.target.parentElement);
-    }
 }
